@@ -1,0 +1,30 @@
+
+Check if a String is a Palindrome (2:40)✅
+Count Vowels and Consonants in a String (6:09)✅
+Count Uppercase, Lowercase, and Digits in a String (9:31)✅
+Reverse Each Word in a Sentence (12:27)✅
+Remove Duplicate Characters from a String (15:55)
+Find Frequency of Each Character in a String (17:17)
+Replace Vowels with an Asterisk (19:53)
+Count Words in a Sentence (20:28)
+Check Anagram Strings (21:39)
+Find Longest Word in a Sentence (23:18)
+List Programs:
+
+Find Largest and Smallest Element in a List (24:38)
+Search for an Element in a List (25:34)
+Sum and Average of List Elements (31:39)
+Create a List of Squares (33:08)
+Separate Positive and Negative Integers/Numbers (34:17)
+Find Second Largest Number (35:50)
+Dictionary Programs:
+
+Calculate Student Marks and Total (36:51)
+Find Key with Maximum Value (38:50)
+Merge Two Dictionaries (39:33)
+Tuple Programs:
+
+Count Even or Odd Numbers in a Tuple (40:39)
+Convert Tuple into List (41:42)
+Check Whether an Element Exists in a Tuple (43:15)
+Unpack Tuple with Two Variables (44:10)

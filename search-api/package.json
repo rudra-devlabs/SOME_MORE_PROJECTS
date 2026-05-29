@@ -1,0 +1,17 @@
+{
+  "name": "search-api",
+  "version": "1.0.0",
+  "description": "Search engine-like API that scrapes websites and returns clean data",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.5",
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.3.1"
+  }
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://www.youtube.com/"
+      }
+    },
+    "condition": {
+      "regexFilter": "^https?://(www\\.|m\\.)?youtube\\.com/shorts(/|\\?|#|$)",
+      "resourceTypes": [
+        "main_frame"
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://www.youtube.com/"
+      }
+    },
+    "condition": {
+      "regexFilter": "^https?://(www\\.|m\\.)?youtube\\.com/playables(/|\\?|#|$)",
+      "resourceTypes": [
+        "main_frame"
+      ]
+    }
+  }
+]

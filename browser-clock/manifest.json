@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Browser Clock",
+  "version": "1.0",
+  "description": "A modern clock extension with Timer, Stopwatch, and Clock tabs.",
+  "permissions": ["scripting", "activeTab"],
+  "action": {
+    "default_title": "Browser Clock"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "style.css", "script.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

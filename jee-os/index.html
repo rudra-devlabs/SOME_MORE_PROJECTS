@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JEE OS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Menu Bar -->
+    <div id="menu-bar">
+        <div class="menu-left">
+            <div class="apple-logo">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            </div>
+            <span class="app-name" id="current-app">JEE OS</span>
+            <div class="menu-items">
+                <span class="menu-item" onclick="showMenu('file')">File</span>
+                <span class="menu-item" onclick="showMenu('edit')">Edit</span>
+                <span class="menu-item" onclick="showMenu('view')">View</span>
+                <span class="menu-item" onclick="showMenu('help')">Help</span>
+            </div>
+        </div>
+        <div class="menu-right">
+            <div class="status-icons">
+                <span id="wifi-icon">📶</span>
+                <span id="battery-icon">🔋</span>
+            </div>
+            <span id="clock">12:00 PM</span>
+        </div>
+    </div>
+
+    <!-- Desktop -->
+    <div id="desktop">
+        <!-- Desktop Icons -->
+        <div class="desktop-icons">
+            <div class="desktop-icon" onclick="openApp('physics')">
+                <div class="icon physics-icon">⚛️</div>
+                <span>Physics</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('chemistry')">
+                <div class="icon chemistry-icon">🧪</div>
+                <span>Chemistry</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('math')">
+                <div class="icon math-icon">📐</div>
+                <span>Mathematics</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('timer')">
+                <div class="icon timer-icon">⏱️</div>
+                <span>Study Timer</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('notes')">
+                <div class="icon notes-icon">📝</div>
+                <span>Notes</span>
+            </div>
+            <div class="desktop-icon" onclick="openApp('calculator')">
+                <div class="icon calc-icon">🔢</div>
+                <span>Calculator</span>
+            </div>
+        </div>
+
+        <!-- Windows Container -->
+        <div id="windows-container"></div>
+    </div>
+
+    <!-- Dock -->
+    <div id="dock">
+        <div class="dock-container">
+            <div class="dock-item" onclick="openApp('physics')" title="Physics">
+                <div class="dock-icon physics-icon">⚛️</div>
+                <span class="dock-label">Physics</span>
+            </div>
+            <div class="dock-item" onclick="openApp('chemistry')" title="Chemistry">
+                <div class="dock-icon chemistry-icon">🧪</div>
+                <span class="dock-label">Chemistry</span>
+            </div>
+            <div class="dock-item" onclick="openApp('math')" title="Mathematics">
+                <div class="dock-icon math-icon">📐</div>
+                <span class="dock-label">Math</span>
+            </div>
+            <div class="dock-separator"></div>
+            <div class="dock-item" onclick="openApp('timer')" title="Study Timer">
+                <div class="dock-icon timer-icon">⏱️</div>
+                <span class="dock-label">Timer</span>
+            </div>
+            <div class="dock-item" onclick="openApp('notes')" title="Notes">
+                <div class="dock-icon notes-icon">📝</div>
+                <span class="dock-label">Notes</span>
+            </div>
+            <div class="dock-item" onclick="openApp('calculator')" title="Calculator">
+                <div class="dock-icon calc-icon">🔢</div>
+                <span class="dock-label">Calculator</span>
+            </div>
+            <div class="dock-separator"></div>
+            <div class="dock-item" onclick="openApp('settings')" title="Settings">
+                <div class="dock-icon settings-icon">⚙️</div>
+                <span class="dock-label">Settings</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="context-menu" class="hidden">
+        <div class="context-item" onclick="createNewFile()">New File</div>
+        <div class="context-item" onclick="createNewFolder()">New Folder</div>
+        <div class="context-separator"></div>
+        <div class="context-item" onclick="changeWallpaper()">Change Wallpaper</div>
+        <div class="context-item" onclick="openSettings()">Settings</div>
+    </div>
+
+    <!-- App Windows -->
+    <template id="window-template">
+        <div class="app-window" data-app="">
+            <div class="window-titlebar">
+                <div class="window-buttons">
+                    <button class="window-btn close-btn" onclick="closeWindow(this)"></button>
+                    <button class="window-btn minimize-btn" onclick="minimizeWindow(this)"></button>
+                    <button class="window-btn maximize-btn" onclick="maximizeWindow(this)"></button>
+                </div>
+                <div class="window-title"></div>
+            </div>
+            <div class="window-content"></div>
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
