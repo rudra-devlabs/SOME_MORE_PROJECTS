@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aether AI - Premium Web IDE & Copilot</title>
+  
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind Configuration for Custom Premium Colors -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-dark': '#0B0F19',
+            'brand-darker': '#06080F',
+            'brand-accent': '#6366f1',
+            'brand-teal': '#14b8a6',
+            'brand-muted': '#9ca3af',
+            'brand-card': '#111827',
+            'brand-border': '#1e293b',
+            'brand-editor': '#0d1117',
+            'brand-terminal': '#030712'
+          },
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"Fira Code"', 'monospace']
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'fade-in': 'fadeIn 0.2s ease-out'
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #06080F;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
+    textarea:focus {
+      outline: none;
+    }
+  </style>
+</head>
+<body class="bg-brand-dark text-slate-100 font-sans min-h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- TOP HEADER / BRAND BAR -->
+  <header class="h-14 border-b border-brand-border bg-brand-darker flex items-center justify-between px-4 z-10 shrink-0">
+    <div class="flex items-center space-x-3">
+      <!-- Premium Logo Graphic -->
+      <div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-teal-500 shadow-lg shadow-indigo-500/20">
+        <span class="text-white font-display font-extrabold text-sm tracking-tighter">Æ</span>
+        <div class="absolute inset-0 rounded-lg border border-white/20 animate-pulse-slow"></div>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="font-display font-bold text-base tracking-wide bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">AETHER AI</span>
+          <span class="px-1.5 py-0.5 text-[10px] uppercase font-bold tracking-widest bg-brand-accent/20 text-indigo-400 border border-brand-accent/30 rounded-md">PRO IDE</span>
+        </div>
+        <p class="text-[10px] text-brand-muted tracking-wide flex items-center">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 inline-block animate-ping"></span>
+          Connected to workspace on localhost:3000
+        </p>
+      </div>
+    </div>
+
+    <!-- Active File & Global Search -->
+    <div class="hidden md:flex items-center bg-brand-card/60 border border-brand-border rounded-lg px-3 py-1.5 w-80 space-x-2 text-xs text-brand-muted hover:border-slate-700 transition">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-muted"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" id="global-search-input" placeholder="Search files (Press Enter)..." onkeydown="handleGlobalSearch(event)" class="bg-transparent border-none w-full focus:outline-none text-slate-200 placeholder-brand-muted">
+    </div>
+
+    <!-- Right Controls, Launch AI Agent & Connection Status -->
+    <div class="flex items-center space-x-3">
+      <!-- LAUNCH AI AGENT BUTTON -->
+      <button id="launch-agent-btn" onclick="launchAIAgent()" class="px-3.5 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/35 transition duration-150 flex items-center space-x-1.5">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="text-white animate-pulse-slow"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <span>Launch AI Agent</span>
+      </button>
+
+      <!-- Workspace Status Indicator -->
+      <div class="flex items-center space-x-2 bg-brand-card border border-brand-border px-3 py-1.5 rounded-lg text-xs">
+        <span class="text-brand-muted">TUI State:</span>
+        <span class="flex items-center font-semibold text-brand-teal">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 8 8" class="mr-1.5 text-brand-teal"><circle cx="4" cy="4" r="3"></circle></svg>
+          ACTIVE
+        </span>
+      </div>
+
+      <!-- Settings Icon -->
+      <button onclick="triggerToast('Settings panel initialized')" class="p-2 rounded-lg hover:bg-slate-800/50 border border-transparent hover:border-brand-border text-brand-muted hover:text-slate-200 transition">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <div class="flex flex-1 overflow-hidden">
+    
+    <!-- LEFT ICON SIDEBAR (SLICK & SLIM) -->
+    <aside class="w-14 border-r border-brand-border bg-brand-darker flex flex-col items-center py-4 justify-between shrink-0">
+      <div class="flex flex-col space-y-4 w-full items-center">
+        <!-- Active View State: Files -->
+        <button id="btn-tab-files" onclick="toggleSidebarTab('files')" class="relative p-2.5 rounded-xl bg-brand-accent/15 text-brand-accent border border-brand-accent/20 transition group">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+          <span class="absolute left-16 scale-0 group-hover:scale-100 transition-all duration-150 origin-left bg-brand-card border border-brand-border px-2.5 py-1 text-xs rounded-md shadow-xl text-slate-100 font-medium whitespace-nowrap z-50">File Explorer</span>
+        </button>
+
+        <!-- View State: Tools List / Actions -->
+        <button id="btn-tab-tools" onclick="toggleSidebarTab('tools')" class="relative p-2.5 rounded-xl text-brand-muted hover:text-slate-100 hover:bg-slate-800/40 transition group">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a2 2 0 002 2h3a1 1 0 011 1v3a2 2 0 01-2 2h-1a2 2 0 00-2 2v3a2 2 0 01-2 2h-3a2 2 0 00-2-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v3a2 2 0 002 2h1a2 2 0 012 2v3a2 2 0 01-2 2H3a1 1 0 01-1-1v-3a2 2 0 012-2h1a2 2 0 002-2V7a2 2 0 012-2h3z"></path></svg>
+          <span class="absolute left-16 scale-0 group-hover:scale-100 transition-all duration-150 origin-left bg-brand-card border border-brand-border px-2.5 py-1 text-xs rounded-md shadow-xl text-slate-100 font-medium whitespace-nowrap z-50">Local Copilot Tools</span>
+        </button>
+
+        <!-- View State: Search in Workspace -->
+        <button id="btn-tab-search" onclick="toggleSidebarTab('search')" class="relative p-2.5 rounded-xl text-brand-muted hover:text-slate-100 hover:bg-slate-800/40 transition group">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <span class="absolute left-16 scale-0 group-hover:scale-100 transition-all duration-150 origin-left bg-brand-card border border-brand-border px-2.5 py-1 text-xs rounded-md shadow-xl text-slate-100 font-medium whitespace-nowrap z-50">Recursive Search (Grep)</span>
+        </button>
+        
+        <!-- View State: Workspace stats -->
+        <button id="btn-tab-stats" onclick="toggleSidebarTab('stats')" class="relative p-2.5 rounded-xl text-brand-muted hover:text-slate-100 hover:bg-slate-800/40 transition group">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+          <span class="absolute left-16 scale-0 group-hover:scale-100 transition-all duration-150 origin-left bg-brand-card border border-brand-border px-2.5 py-1 text-xs rounded-md shadow-xl text-slate-100 font-medium whitespace-nowrap z-50">Workspace Stats</span>
+        </button>
+      </div>
+
+      <div class="flex flex-col items-center space-y-4">
+        <!-- Live System Indicator -->
+        <div class="relative group cursor-pointer" onclick="triggerToast('Gemini 1.5 Pro pipeline fully functional')">
+          <div class="w-8 h-8 rounded-full border border-teal-500/30 flex items-center justify-center bg-teal-500/10">
+            <span class="text-teal-400 text-xs font-bold">1.5</span>
+          </div>
+          <span class="absolute left-16 bottom-0 scale-0 group-hover:scale-100 transition-all duration-150 origin-left bg-brand-card border border-brand-border px-2.5 py-1 text-[11px] rounded-md shadow-xl text-slate-300 whitespace-nowrap z-50">Gemini 1.5 Pro Active</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- SIDEBAR EXPANDED DRAWER -->
+    <div id="sidebar-drawer" class="w-64 border-r border-brand-border bg-brand-dark/95 flex flex-col shrink-0">
+      
+      <!-- HEADER OF SIDEBAR DRAWER -->
+      <div class="h-12 border-b border-brand-border px-4 flex items-center justify-between">
+        <h2 id="sidebar-title" class="font-display font-semibold text-xs text-slate-300 uppercase tracking-wider">WORKSPACE FILES</h2>
+        <button onclick="createNewFilePrompt()" class="p-1 rounded hover:bg-slate-800 text-brand-muted hover:text-slate-100 transition" title="New File">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        </button>
+      </div>
+
+      <!-- DRAWER PANELS -->
+      <div class="flex-1 overflow-y-auto p-2" id="sidebar-panel-container">
+        
+        <!-- PANEL: File Explorer (Active default) -->
+        <div id="panel-files" class="space-y-1 block">
+          <div class="flex items-center text-brand-muted text-xs font-semibold px-2 py-1 select-none">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-1.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            workspace-root
+          </div>
+          <div id="file-explorer-list" class="space-y-0.5 pl-3">
+            <!-- Dynamic file rows injected here -->
+          </div>
+        </div>
+
+        <!-- PANEL: Tools -->
+        <div id="panel-tools" class="space-y-3 hidden p-2">
+          <p class="text-xs text-brand-muted leading-relaxed">Local system controls configured automatically with Gemini via terminal XML commands:</p>
+          <div class="space-y-2">
+            <div class="p-2.5 rounded-lg bg-slate-900/60 border border-brand-border">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-semibold text-brand-teal font-mono">write_file</span>
+                <span class="text-[10px] uppercase font-bold text-slate-500">File IO</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Writes/updates complete codebase modules inside sandbox pathing.</p>
+            </div>
+            
+            <div class="p-2.5 rounded-lg bg-slate-900/60 border border-brand-border">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-semibold text-indigo-400 font-mono">replace (edit)</span>
+                <span class="text-[10px] uppercase font-bold text-slate-500">Precise Code</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Replaces chunks dynamically using multi-target context anchors.</p>
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-slate-900/60 border border-brand-border">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-semibold text-amber-400 font-mono">execute_command</span>
+                <span class="text-[10px] uppercase font-bold text-slate-500">Shell Run</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Launches compilers, setups or standard execution targets inside local CLI environment.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL: Search -->
+        <div id="panel-search" class="space-y-3 hidden p-2">
+          <div class="space-y-1">
+            <label class="text-[11px] text-brand-muted uppercase font-bold tracking-wider">Query Regex</label>
+            <input id="search-query-input" type="text" placeholder="e.g. function formatText" class="w-full bg-brand-card border border-brand-border rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+          </div>
+          <button onclick="runWorkspaceSearch()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-xs text-white rounded font-medium transition flex items-center justify-center space-x-1">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <span>Run Recursive Search</span>
+          </button>
+          <div id="search-results-area" class="mt-4 text-xs font-mono space-y-2 max-h-60 overflow-y-auto text-slate-400">
+            <!-- Search Results -->
+          </div>
+        </div>
+
+        <!-- PANEL: Stats -->
+        <div id="panel-stats" class="space-y-3 hidden p-2">
+          <div class="grid grid-cols-2 gap-2">
+            <div class="p-2 bg-slate-900/50 border border-brand-border rounded text-center">
+              <span id="stats-files-count" class="block text-xl font-bold font-display text-brand-accent">-</span>
+              <span class="text-[10px] text-brand-muted uppercase">Files</span>
+            </div>
+            <div class="p-2 bg-slate-900/50 border border-brand-border rounded text-center">
+              <span id="stats-total-size" class="block text-xl font-bold font-display text-teal-400">-</span>
+              <span class="text-[10px] text-brand-muted uppercase">Size</span>
+            </div>
+          </div>
+          <div class="border-t border-brand-border pt-2 text-xs space-y-1.5">
+            <div class="flex justify-between"><span class="text-brand-muted">IDE Platform:</span><span>Web TUI Hybrid</span></div>
+            <div class="flex justify-between"><span class="text-brand-muted">Debugger Port:</span><span>9222</span></div>
+            <div class="flex justify-between"><span class="text-brand-muted">Active Host:</span><span>Localhost:3000</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MAIN CENTER ZONE (Split: Editor + Terminal at bottom) -->
+    <main class="flex-1 flex flex-col overflow-hidden bg-brand-editor/30 relative">
+      
+      <!-- EDITOR TABS -->
+      <div class="h-10 border-b border-brand-border bg-brand-darker flex items-center justify-between px-3 shrink-0">
+        <div class="flex items-center space-x-1 overflow-x-auto no-scrollbar" id="editor-tabs-container">
+          <!-- Dynamic Tabs Injected Here -->
+        </div>
+        
+        <!-- Editor Control Actions -->
+        <div class="flex items-center space-x-2">
+          <button onclick="saveActiveFile()" class="px-2.5 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition flex items-center space-x-1" title="Save File to System">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+            <span class="hidden sm:inline">Save</span>
+          </button>
+          <button onclick="triggerFormat()" class="px-2.5 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition flex items-center space-x-1" title="Format Code">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            <span class="hidden sm:inline">Format</span>
+          </button>
+          <button onclick="runLocalCode()" class="px-3 py-1 text-xs rounded bg-teal-600 hover:bg-teal-700 text-white font-medium shadow-md shadow-teal-600/15 hover:shadow-teal-600/30 transition flex items-center space-x-1.5" title="Compile and Execute with CLI Tools">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="text-white"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            <span class="font-semibold">Run</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CODE EDITOR GRID AREA (LINE NUMBERS + TEXTAREA) -->
+      <div class="flex-1 overflow-hidden flex relative bg-brand-editor/95">
+        <!-- Vertical Line numbers -->
+        <div class="w-12 border-r border-brand-border py-4 select-none text-right pr-3 font-mono text-[11px] text-slate-500 bg-brand-editor/40 leading-6 shrink-0" id="editor-line-numbers">
+          <!-- Dynamic Line Numbers -->
+        </div>
+
+        <!-- Editable Area -->
+        <div class="flex-1 relative h-full">
+          <textarea id="code-textarea" oninput="handleCodeChange()" class="absolute inset-0 w-full h-full bg-transparent font-mono text-xs md:text-[13px] text-slate-200 p-4 leading-6 resize-none focus:ring-0 focus:outline-none select-text overflow-y-auto overflow-x-auto whitespace-pre z-10"></textarea>
+        </div>
+      </div>
+
+      <!-- BOTTOM PANEL (Simulated Terminal Logs) -->
+      <div class="h-48 border-t border-brand-border bg-brand-terminal flex flex-col shrink-0">
+        <!-- Terminal Header Controls -->
+        <div class="h-8 border-b border-brand-border bg-brand-dark flex items-center justify-between px-4">
+          <div class="flex items-center space-x-3 text-xs">
+            <span class="font-display font-semibold text-[11px] text-slate-400 uppercase tracking-widest flex items-center">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-1 text-brand-accent"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3"></path></svg>
+              Workspace Console
+            </span>
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-teal"></span>
+            <span class="text-brand-muted text-[10px] font-mono">active_pid: Express Bridge</span>
+          </div>
+          <button onclick="clearTerminal()" class="text-brand-muted hover:text-slate-200 text-xs transition flex items-center space-x-1">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            <span class="text-[10px]">Clear Logs</span>
+          </button>
+        </div>
+        
+        <!-- Terminal Console Buffer -->
+        <div class="flex-1 p-3 font-mono text-xs overflow-y-auto text-slate-300 leading-5" id="terminal-buffer">
+          <div class="text-brand-muted">[AETHER CORE] Connected natively to filesystem server on port 3000.</div>
+          <div class="text-teal-400">[SYSTEM ALIGNMENT] Local API endpoints functional. Live updates enabled.</div>
+          <div class="text-indigo-400 flex items-center">
+            <span class="mr-2">❯</span> Active workspace: Ready to run scripts or launch the AI Studio Agent.
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL (CO-PILOT CONTEXT & CODE REVIEW CHAT) -->
+    <aside class="w-96 border-l border-brand-border bg-brand-dark flex flex-col shrink-0">
+      
+      <!-- TAB TOGGLE: AI CHAT vs CODE REVIEW -->
+      <div class="h-12 border-b border-brand-border flex items-center bg-brand-darker">
+        <button id="btn-right-chat" onclick="switchRightTab('chat')" class="flex-1 h-full font-display text-xs font-semibold uppercase tracking-wider text-brand-accent border-b-2 border-brand-accent flex items-center justify-center space-x-1.5">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+          <span>Gemini Copilot</span>
+        </button>
+        <button id="btn-right-review" onclick="switchRightTab('review')" class="flex-1 h-full font-display text-xs font-semibold uppercase tracking-wider text-brand-muted hover:text-slate-100 flex items-center justify-center space-x-1.5">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>Code Review</span>
+          <span id="review-badge-count" class="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1">0</span>
+        </button>
+      </div>
+
+      <!-- AI CHAT VIEWPORT -->
+      <div id="right-view-chat" class="flex-1 flex flex-col overflow-hidden">
+        
+        <!-- TEMPORARY CHAT TOGGLE BAR -->
+        <div id="incognito-banner" class="px-4 py-2 border-b border-brand-border flex items-center justify-between transition-colors duration-300 bg-slate-900/60">
+          <div class="flex items-center space-x-2">
+            <svg id="incognito-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-slate-400"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <div>
+              <p class="text-xs font-semibold" id="incognito-title">Temporary Chat Mode</p>
+              <p class="text-[9px] text-brand-muted" id="incognito-desc">Messages won't save to workspace history</p>
+            </div>
+          </div>
+          <!-- Toggle Slider Switch -->
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="temp-chat-toggle" class="sr-only peer" onchange="toggleTempChat()">
+            <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-accent peer-checked:after:bg-white"></div>
+          </label>
+        </div>
+
+        <!-- CHAT MESSAGE BOARD -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-scroller">
+          
+          <!-- System Welcome Message -->
+          <div class="flex space-x-2.5">
+            <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center font-display font-bold text-xs shrink-0 select-none shadow shadow-indigo-600/30">G</div>
+            <div class="bg-brand-card border border-brand-border rounded-xl p-3 max-w-[85%]">
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Hello. I am Gemini. This workspace is connected natively to the bridge server. You can write scripts, view actual files on disk, run tests, and spin up the Playwright automation session.
+              </p>
+              <div class="mt-2.5 pt-2 border-t border-brand-border flex flex-wrap gap-1.5">
+                <button onclick="fillChatInput('Write a unit test for my current active file')" class="text-[10px] bg-slate-900 border border-slate-800 text-slate-300 px-2 py-1 rounded hover:border-brand-accent hover:text-indigo-400 transition">Write Unit Test</button>
+                <button onclick="fillChatInput('Refactor functions inside the file')" class="text-[10px] bg-slate-900 border border-slate-800 text-slate-300 px-2 py-1 rounded hover:border-brand-accent hover:text-indigo-400 transition">Refactor Active Code</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Chat Messages Container -->
+          <div id="dynamic-chat-messages" class="space-y-4"></div>
+
+          <!-- Mock Typing Indicator -->
+          <div id="typing-indicator" class="flex space-x-2.5 hidden">
+            <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center font-display font-bold text-xs shrink-0 shadow shadow-indigo-600/30">G</div>
+            <div class="bg-brand-card border border-brand-border rounded-xl px-4 py-3 flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 bg-brand-muted rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+              <span class="w-1.5 h-1.5 bg-brand-muted rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+              <span class="w-1.5 h-1.5 bg-brand-muted rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+            </div>
+          </div>
+          
+        </div>
+
+        <!-- CHAT INPUT CONTROLLER -->
+        <div class="p-3 border-t border-brand-border bg-brand-darker">
+          <div class="relative bg-brand-card border border-brand-border rounded-xl focus-within:border-brand-accent transition p-1">
+            <textarea id="chat-input" onkeydown="handleChatSubmit(event)" placeholder="Ask Gemini, execute commands or write features..." rows="2" class="w-full bg-transparent border-none text-xs text-slate-200 px-2.5 py-1.5 focus:ring-0 focus:outline-none resize-none placeholder-brand-muted"></textarea>
+            
+            <div class="flex items-center justify-between px-2 py-1">
+              <!-- Attached Active File Badge -->
+              <span class="inline-flex items-center text-[10px] bg-slate-900 border border-slate-800 text-brand-muted px-2 py-0.5 rounded max-w-[60%] truncate">
+                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-1 text-teal-400"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                <span id="attached-filename-badge">index.html</span>
+              </span>
+
+              <!-- Action buttons -->
+              <div class="flex items-center space-x-1.5">
+                <button onclick="triggerToast('Voice recognition initialized')" class="p-1.5 rounded-lg hover:bg-slate-800 text-brand-muted hover:text-slate-100 transition" title="Voice Input">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                </button>
+                <button id="send-chat-btn" onclick="submitChatMessage()" class="p-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition shadow shadow-indigo-600/30" title="Send Message">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 text-center">
+            <span class="text-[9px] text-brand-muted">Hit <kbd class="px-1 py-0.5 bg-slate-900 border border-slate-800 rounded font-mono">Enter</kbd> to submit query, <kbd class="px-1 py-0.5 bg-slate-900 border border-slate-800 rounded font-mono">Shift+Enter</kbd> for newline</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CODE REVIEW VIEWPORT -->
+      <div id="right-view-review" class="flex-1 flex flex-col overflow-hidden hidden">
+        
+        <!-- REVIEW SUMMARY -->
+        <div class="p-4 border-b border-brand-border bg-slate-900/60 flex items-center justify-between">
+          <div>
+            <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Review Dashboard</h3>
+            <p class="text-[10px] text-brand-muted mt-0.5">Automated code review metrics</p>
+          </div>
+          <button onclick="performAILineReview()" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-[11px] rounded font-semibold text-white transition shadow shadow-indigo-600/20">
+            Re-Analyze File
+          </button>
+        </div>
+
+        <!-- LIST OF REVIEW COMMENTS -->
+        <div class="flex-1 overflow-y-auto p-3 space-y-3" id="review-comments-container">
+          <!-- Real/Mock review list items loaded by JS -->
+        </div>
+
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- STATUS FOOTER BAR -->
+  <footer class="h-6 border-t border-brand-border bg-brand-darker flex items-center justify-between px-4 text-[11px] text-brand-muted shrink-0 z-10">
+    <div class="flex items-center space-x-4">
+      <span class="flex items-center text-slate-300 font-semibold">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-1 text-indigo-400"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+        git: main
+      </span>
+      <span class="flex items-center text-brand-teal">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-1 text-brand-teal"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        Natively Synced
+      </span>
+    </div>
+    
+    <div class="flex items-center space-x-3">
+      <span id="editor-cursor-pos">Ln 1, Col 1</span>
+      <span>UTF-8</span>
+      <span class="font-mono text-brand-accent bg-indigo-600/10 px-1 py-0.5 rounded border border-indigo-600/20 font-bold uppercase text-[9px] tracking-wider">Bridge Mode</span>
+    </div>
+  </footer>
+
+  <!-- TOAST NOTIFICATION SLATE -->
+  <div id="toast-wrapper" class="fixed bottom-10 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- IDE APPLICATION LOGIC CODE -->
+  <script>
+    // State management
+    const files = {};
+    let activeFile = 'aistudio_tui.js';
+    let tempChatMode = false;
+    let rightTab = 'chat';
+    let sidebarTab = 'files';
+
+    // Mock Code Review Comments Database fallback
+    const reviewCommentsFallback = {
+      'aistudio_tui.js': [
+        { id: 1, type: 'critical', line: 121, msg: 'Dangerous command block rules permit generic shell bypasses. Sanitize parameters.', fixable: true, code: `const sanitized = command.replace(/[^a-zA-Z0-9_.-]/g, '');` },
+        { id: 2, type: 'info', line: 200, msg: 'Hardcoded debugging port 9222 might block local connections. Configure standard dynamically.', fixable: false }
+      ]
+    };
+
+    // DOM References
+    const codeTextarea = document.getElementById('code-textarea');
+    const editorLineNumbers = document.getElementById('editor-line-numbers');
+    const editorTabsContainer = document.getElementById('editor-tabs-container');
+    const fileExplorerList = document.getElementById('file-explorer-list');
+    const terminalBuffer = document.getElementById('terminal-buffer');
+    const chatInput = document.getElementById('chat-input');
+    const dynamicChatMessages = document.getElementById('dynamic-chat-messages');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const chatScroller = document.getElementById('chat-scroller');
+    const reviewBadgeCount = document.getElementById('review-badge-count');
+    const reviewCommentsContainer = document.getElementById('review-comments-container');
+    const attachedFilenameBadge = document.getElementById('attached-filename-badge');
+    const editorCursorPos = document.getElementById('editor-cursor-pos');
+    const searchResultsArea = document.getElementById('search-results-area');
+    const searchQueryInput = document.getElementById('search-query-input');
+
+    // Startup Init
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadWorkspaceFiles();
+      setupCursorTracker();
+      // Periodically sync chat messages from bridge server
+      setInterval(pollChatMessages, 1500);
+    });
+
+    let lastHistoryLength = 0;
+
+    async function pollChatMessages() {
+      try {
+        const res = await fetch('/api/chat');
+        const data = await res.json();
+        const history = data.history || [];
+        
+        if (history.length !== lastHistoryLength) {
+          lastHistoryLength = history.length;
+          dynamicChatMessages.innerHTML = '';
+          typingIndicator.classList.add('hidden');
+          
+          history.forEach(msg => {
+            if (msg.role === 'user') {
+              appendUserMessage(msg.content);
+            } else if (msg.role === 'assistant') {
+              let toolHtml = '';
+              if (msg.tools && msg.tools.length > 0) {
+                msg.tools.forEach(tool => {
+                  toolHtml += generateToolCallHtml(tool.name, tool.path, tool.content);
+                });
+              }
+              // If there's content or tools, display them
+              if (msg.content || toolHtml) {
+                appendAIMessage(msg.content, toolHtml);
+              }
+            }
+          });
+          chatScroller.scrollTop = chatScroller.scrollHeight;
+        }
+      } catch (e) {
+        console.error("Error polling chat history:", e);
+      }
+    }
+
+    // Tracking Cursor line and Column in Status Bar
+    function setupCursorTracker() {
+      codeTextarea.addEventListener('keyup', updateCursorPosition);
+      codeTextarea.addEventListener('click', updateCursorPosition);
+    }
+
+    function updateCursorPosition() {
+      const selectionStart = codeTextarea.selectionStart;
+      const textToCursor = codeTextarea.value.substring(0, selectionStart);
+      const lines = textToCursor.split('\n');
+      const currentLine = lines.length;
+      const currentCol = lines[lines.length - 1].length + 1;
+      editorCursorPos.innerText = `Ln ${currentLine}, Col ${currentCol}`;
+    }
+
+    // Load actual files from local server backend API
+    async function loadWorkspaceFiles() {
+      try {
+        const res = await fetch('/api/files');
+        const data = await res.json();
+        if (data.files && Object.keys(data.files).length > 0) {
+          // Clear and copy contents
+          Object.keys(files).forEach(k => delete files[k]);
+          Object.assign(files, data.files);
+          
+          const filenames = Object.keys(files);
+          if (!filenames.includes(activeFile)) {
+            activeFile = filenames[0] || '';
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch backend files. Using fallback empty structures:", e);
+        files['aistudio_tui.js'] = `// Check server connection`;
+      }
+      
+      renderFileExplorer();
+      switchFile(activeFile);
+      renderTabs();
+      updateWorkspaceStats();
+    }
+
+    function updateWorkspaceStats() {
+      const fileNames = Object.keys(files);
+      document.getElementById('stats-files-count').innerText = fileNames.length;
+      
+      let totalBytes = 0;
+      fileNames.forEach(f => {
+        totalBytes += (files[f] || '').length;
+      });
+      const sizeKB = (totalBytes / 1024).toFixed(2);
+      document.getElementById('stats-total-size').innerText = `${sizeKB} KB`;
+    }
+
+    // Render Side Panel Tab switches
+    function toggleSidebarTab(tab) {
+      sidebarTab = tab;
+      
+      // Update tab button styles
+      ['files', 'tools', 'search', 'stats'].forEach(t => {
+        const btn = document.getElementById(`btn-tab-${t}`);
+        const panel = document.getElementById(`panel-${t}`);
+        if (t === tab) {
+          btn.className = "relative p-2.5 rounded-xl bg-brand-accent/15 text-brand-accent border border-brand-accent/20 transition group";
+          panel.classList.remove('hidden');
+        } else {
+          btn.className = "relative p-2.5 rounded-xl text-brand-muted hover:text-slate-100 hover:bg-slate-800/40 transition group";
+          panel.classList.add('hidden');
+        }
+      });
+
+      // Update sidebar title text
+      const titles = {
+        'files': 'WORKSPACE FILES',
+        'tools': 'CO-PILOT INTERFACE TOOLS',
+        'search': 'RECURSIVE SEARCH',
+        'stats': 'WORKSPACE METRICS'
+      };
+      document.getElementById('sidebar-title').innerText = titles[tab];
+    }
+
+    // Right Panel Tab switch (AI Chat vs Code Review)
+    function switchRightTab(tab) {
+      rightTab = tab;
+      const chatBtn = document.getElementById('btn-right-chat');
+      const reviewBtn = document.getElementById('btn-right-review');
+      const chatView = document.getElementById('right-view-chat');
+      const reviewView = document.getElementById('right-view-review');
+
+      if (tab === 'chat') {
+        chatBtn.className = "flex-1 h-full font-display text-xs font-semibold uppercase tracking-wider text-brand-accent border-b-2 border-brand-accent flex items-center justify-center space-x-1.5";
+        reviewBtn.className = "flex-1 h-full font-display text-xs font-semibold uppercase tracking-wider text-brand-muted hover:text-slate-100 flex items-center justify-center space-x-1.5";
+        chatView.classList.remove('hidden');
+        reviewView.classList.add('hidden');
+      } else {
+        reviewBtn.className = "flex-1 h-full font-display text-xs font-semibold uppercase tracking-wider text-brand-accent border-b-2 border-brand-accent flex items-center justify-center space-x-1.5";
+        chatBtn.className = "flex-1 h-full font-display text-xs font-semibold uppercase tracking-wider text-brand-muted hover:text-slate-100 flex items-center justify-center space-x-1.5";
+        chatView.classList.add('hidden');
+        reviewView.classList.remove('hidden');
+        performAILineReview();
+      }
+    }
+
+    // Toggle Temporary Chat Mode
+    function toggleTempChat() {
+      const toggle = document.getElementById('temp-chat-toggle');
+      tempChatMode = toggle.checked;
+
+      const banner = document.getElementById('incognito-banner');
+      const title = document.getElementById('incognito-title');
+      const desc = document.getElementById('incognito-desc');
+      const icon = document.getElementById('incognito-icon');
+
+      if (tempChatMode) {
+        banner.className = "px-4 py-2 border-b border-rose-500/20 flex items-center justify-between bg-rose-950/20 transition-all duration-300";
+        title.className = "text-xs font-semibold text-rose-400";
+        title.innerText = "Temporary Incognito Mode";
+        desc.className = "text-[9px] text-rose-500/70";
+        desc.innerText = "History, context variables & files won't persist locally";
+        icon.className = "text-rose-400";
+        triggerToast("Temporary Chat Enabled", "warning");
+      } else {
+        banner.className = "px-4 py-2 border-b border-brand-border flex items-center justify-between bg-slate-900/60 transition-all duration-300";
+        title.className = "text-xs font-semibold text-slate-200";
+        title.innerText = "Temporary Chat Mode";
+        desc.className = "text-[9px] text-brand-muted";
+        desc.innerText = "Messages won't save to workspace history";
+        icon.className = "text-slate-400";
+        triggerToast("Incognito Mode Disabled", "success");
+      }
+    }
+
+    // Render File Rows inside Explorer Sidebar Drawer
+    function renderFileExplorer() {
+      fileExplorerList.innerHTML = '';
+      Object.keys(files).forEach(filename => {
+        const isCurrent = filename === activeFile;
+        const div = document.createElement('div');
+        div.onclick = () => switchFile(filename);
+        div.className = `flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer text-xs font-mono transition duration-150 group ${isCurrent ? 'bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 font-medium' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 border border-transparent'}`;
+        
+        let iconColor = 'text-amber-500';
+        if (filename.endsWith('.json')) iconColor = 'text-teal-400';
+        if (filename.endsWith('.js')) iconColor = 'text-yellow-400';
+        if (filename.endsWith('.md')) iconColor = 'text-blue-400';
+
+        div.innerHTML = `
+          <div class="flex items-center space-x-2 truncate">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="${iconColor} shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            <span class="truncate">${filename}</span>
+          </div>
+          <button onclick="event.stopPropagation(); deleteWorkspaceFile('${filename}')" class="p-0.5 rounded hover:bg-slate-700 hover:text-red-400 text-slate-500 transition opacity-0 group-hover:opacity-100" title="Delete File">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          </button>
+        `;
+        fileExplorerList.appendChild(div);
+      });
+    }
+
+    // Render Editor Header Tabs
+    function renderTabs() {
+      editorTabsContainer.innerHTML = '';
+      Object.keys(files).forEach(filename => {
+        const isCurrent = filename === activeFile;
+        const tab = document.createElement('div');
+        tab.onclick = () => switchFile(filename);
+        tab.className = `flex items-center h-10 px-4 border-r border-brand-border cursor-pointer text-xs font-mono select-none space-x-2 transition ${isCurrent ? 'bg-brand-editor text-slate-100 border-t-2 border-t-brand-accent' : 'bg-slate-900/40 text-slate-500 hover:text-slate-300'}`;
+        
+        tab.innerHTML = `
+          <span>${filename}</span>
+          <span onclick="event.stopPropagation(); closeTab('${filename}')" class="p-0.5 rounded-full hover:bg-slate-800 hover:text-red-400 text-slate-600 transition">&times;</span>
+        `;
+        editorTabsContainer.appendChild(tab);
+      });
+    }
+
+    // Switch Working Active File
+    function switchFile(filename) {
+      if (!files[filename]) return;
+      activeFile = filename;
+      codeTextarea.value = files[filename];
+      attachedFilenameBadge.innerText = filename;
+      
+      renderTabs();
+      renderFileExplorer();
+      regenerateLineNumbers();
+      performAILineReview();
+      updateCursorPosition();
+    }
+
+    // Regenerate Editor Vertical Line Numbers
+    function regenerateLineNumbers() {
+      const linesCount = codeTextarea.value.split('\n').length;
+      let numbersHtml = '';
+      for (let i = 1; i <= Math.max(linesCount, 1); i++) {
+        numbersHtml += `<div>${i}</div>`;
+      }
+      editorLineNumbers.innerHTML = numbersHtml;
+    }
+
+    // Code changes handler
+    function handleCodeChange() {
+      files[activeFile] = codeTextarea.value;
+      regenerateLineNumbers();
+    }
+
+    // Create New Workspace File natively
+    async function createNewFilePrompt() {
+      const name = prompt("Enter new filename in workspace:", "app.js");
+      if (name && name.trim()) {
+        const cleanName = name.trim();
+        if (files[cleanName]) {
+          triggerToast("File already exists in workspace", "warning");
+          return;
+        }
+        
+        try {
+          const res = await fetch(`/api/file?path=${cleanName}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: `// Initialized file ${cleanName}` })
+          });
+          const result = await res.json();
+          if (result.success) {
+            files[cleanName] = `// Initialized file ${cleanName}`;
+            activeFile = cleanName;
+            await loadWorkspaceFiles();
+            triggerToast(`Created file ${cleanName}`, "success");
+            appendTerminalLine(`[FILESYSTEM] Successfully initialized a new module: ${cleanName}`, "text-slate-300");
+          }
+        } catch (e) {
+          triggerToast("Failed to write new file to disk", "error");
+        }
+      }
+    }
+
+    // Close File Tab
+    function closeTab(filename) {
+      const remainingFiles = Object.keys(files);
+      if (remainingFiles.length === 1) {
+        triggerToast("Cannot close the final workspace node", "warning");
+        return;
+      }
+      
+      if (activeFile === filename) {
+        const nextActive = remainingFiles.find(f => f !== filename);
+        switchFile(nextActive);
+      }
+      delete files[filename];
+      renderTabs();
+      renderFileExplorer();
+      triggerToast(`Closed active tab ${filename}`);
+    }
+
+    // Safe Workspace File Deletion natively via server
+    async function deleteWorkspaceFile(filename) {
+      if (Object.keys(files).length === 1) {
+        triggerToast("Cannot delete the final workspace node", "warning");
+        return;
+      }
+      
+      const confirmText = `Are you sure you want to delete ${filename}? This removes it from disk.`;
+      if (confirm(confirmText)) {
+        try {
+          const res = await fetch(`/api/file?path=${filename}`, { method: 'DELETE' });
+          const result = await res.json();
+          if (result.success) {
+            delete files[filename];
+            if (activeFile === filename) {
+              const nextActive = Object.keys(files).find(f => f !== filename);
+              switchFile(nextActive);
+            }
+            triggerToast(`Successfully deleted ${filename}`, "success");
+            appendTerminalLine(`[FILESYSTEM] Deleted node: ${filename}`, "text-red-400");
+            await loadWorkspaceFiles();
+          }
+        } catch (e) {
+          triggerToast("Failed to delete file from disk", "error");
+        }
+      }
+    }
+
+    // Save File natively to filesystem
+    async function saveActiveFile() {
+      try {
+        const res = await fetch(`/api/file?path=${activeFile}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: codeTextarea.value })
+        });
+        const result = await res.json();
+        if (result.success) {
+          files[activeFile] = codeTextarea.value;
+          triggerToast(`Successfully saved ${activeFile} to disk`, "success");
+          appendTerminalLine(`[SUCCESS] File successfully written to relative path: ./${activeFile}`, "text-emerald-400");
+          updateWorkspaceStats();
+        }
+      } catch (e) {
+        triggerToast(`Failed to save file: ${e.message}`, "error");
+      }
+    }
+
+    // Format Code Action
+    async function triggerFormat() {
+      const initialCode = codeTextarea.value;
+      const lines = initialCode.split('\n');
+      const formattedLines = lines.map(line => line.trimEnd());
+      codeTextarea.value = formattedLines.join('\n');
+      files[activeFile] = codeTextarea.value;
+      
+      // Save changes natively
+      await saveActiveFile();
+      triggerToast("Formatted complete codebase module", "success");
+      appendTerminalLine(`[FORMATTER] Cleaned up code alignments inside ${activeFile}`, "text-indigo-400");
+    }
+
+    // Run active file natively using execution bridge
+    async function runLocalCode() {
+      triggerToast(`Executing local process for ${activeFile}...`, "success");
+      appendTerminalLine(`❯ node ${activeFile}`, "text-indigo-400 font-semibold");
+      
+      try {
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: `node ${activeFile}` })
+        });
+        const data = await res.json();
+        if (data.error) {
+          appendTerminalLine(`[EXECUTION ERROR: ${data.error}]`, "text-red-500");
+        }
+        if (data.stdout) {
+          appendTerminalLine(data.stdout, "text-slate-100");
+        }
+        if (data.stderr) {
+          appendTerminalLine(data.stderr, "text-red-400 font-semibold");
+        }
+        if (!data.stdout && !data.stderr && !data.error) {
+          appendTerminalLine(`[SUCCESS] Script executed returning exit code (0)`, "text-emerald-400");
+        }
+      } catch (e) {
+        appendTerminalLine(`[BRIDGE ERROR] Failed to contact local compiler: ${e.message}`, "text-red-500");
+      }
+    }
+
+    // NATIVE BRIDGE ACTION: LAUNCH GOOGLE AI STUDIO TERMINAL AGENT
+    async function launchAIAgent() {
+      triggerToast("Launching AI Agent automation session...", "success");
+      appendTerminalLine(`❯ start node aistudio_tui.js`, "text-teal-400 font-semibold");
+      
+      try {
+        // Run as a background process shell window to permit interactive console input safely
+        const res = await fetch('/api/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: 'start node aistudio_tui.js' })
+        });
+        const data = await res.json();
+        if (data.error) {
+          appendTerminalLine(`[LAUNCH ERROR] ${data.error}`, "text-red-500");
+          triggerToast("Failed to launch AI Agent process", "error");
+        } else {
+          appendTerminalLine(`[SYSTEM LOG] Spawning independent cmd/powershell process running aistudio_tui.js...`, "text-slate-300");
+          appendTerminalLine(`[SYSTEM LOG] Launching Chrome Browser on port 9222 with CDP...`, "text-indigo-400");
+          triggerToast("AI Agent automation session initiated", "success");
+        }
+      } catch (e) {
+        appendTerminalLine(`[BRIDGE ERROR] Failed to spawn agent: ${e.message}`, "text-red-500");
+      }
+    }
+
+    // Global file name filter
+    async function handleGlobalSearch(e) {
+      if (e.key === 'Enter') {
+        const query = document.getElementById('global-search-input').value.trim();
+        if (!query) return;
+        
+        toggleSidebarTab('search');
+        document.getElementById('search-query-input').value = query;
+        runWorkspaceSearch();
+      }
+    }
+
+    // Recursive search / Grep native API execution
+    async function runWorkspaceSearch() {
+      const query = searchQueryInput.value.trim();
+      if (!query) {
+        triggerToast("Please enter a search query", "warning");
+        return;
+      }
+
+      searchResultsArea.innerHTML = `<span class="text-brand-accent animate-pulse">Grep pipeline running...</span>`;
+      
+      try {
+        const res = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        const data = await res.json();
+        const results = data.results || [];
+
+        if (results.length === 0) {
+          searchResultsArea.innerHTML = `<div class="text-rose-400">No matches found for query "${query}"</div>`;
+          appendTerminalLine(`[GREP] Searched workspace. No results for query: "${query}"`, "text-brand-muted");
+        } else {
+          searchResultsArea.innerHTML = results.map(match => `
+            <div onclick="switchFile('${match.filename}')" class="p-1.5 hover:bg-slate-800/60 rounded cursor-pointer border-b border-brand-border/40 transition">
+              <span class="text-brand-teal font-semibold">${match.filename}:${match.lineNum}</span>
+              <div class="text-slate-300 pl-2 text-[11px] truncate font-mono">${match.content}</div>
+            </div>
+          `).join('');
+          appendTerminalLine(`[GREP] Found ${results.length} matches inside codebase workspace.`, "text-emerald-400");
+        }
+      } catch (e) {
+        searchResultsArea.innerHTML = `<div class="text-red-400">Search error: ${e.message}</div>`;
+      }
+    }
+
+    // Code Review System Analyzer
+    function performAILineReview() {
+      // Load from reviews fallback or mock dynamic items
+      const activeComments = reviewCommentsFallback[activeFile] || [];
+      reviewBadgeCount.innerText = activeComments.length;
+
+      if (activeComments.length === 0) {
+        reviewCommentsContainer.innerHTML = `
+          <div class="p-8 text-center text-brand-muted space-y-2">
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="mx-auto text-emerald-500"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <p class="text-xs font-semibold text-slate-300">File is clean</p>
+            <p class="text-[10px]">No syntax, functional or architectural anomalies detected.</p>
+          </div>
+        `;
+        return;
+      }
+
+      reviewCommentsContainer.innerHTML = activeComments.map(comment => {
+        let borderClass = 'border-l-indigo-500';
+        let badgeColor = 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20';
+        if (comment.type === 'critical') {
+          borderClass = 'border-l-red-500';
+          badgeColor = 'bg-red-500/10 text-red-400 border border-red-500/20';
+        } else if (comment.type === 'warning') {
+          borderClass = 'border-l-amber-500';
+          badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+        }
+
+        return `
+          <div class="p-3 bg-brand-card border border-brand-border border-l-4 ${borderClass} rounded-r-lg space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] px-1.5 py-0.5 rounded-md uppercase font-bold tracking-widest ${badgeColor}">${comment.type}</span>
+              <span class="text-[10px] font-mono text-brand-muted">Line ${comment.line}</span>
+            </div>
+            <p class="text-[11px] text-slate-300 leading-relaxed">${comment.msg}</p>
+            ${comment.fixable ? `
+              <div class="pt-2 flex justify-end">
+                <button onclick="applyReviewFix(${comment.id})" class="px-2 py-1 bg-teal-600/20 text-brand-teal hover:bg-teal-600 hover:text-white border border-teal-500/30 text-[10px] rounded font-semibold transition flex items-center space-x-1">
+                  <svg width="10" height="10" fill="currentColor" viewBox="0 0 16 16"><path d="M9.302 1.256a1.5 1.5 0 0 0-2.604 0l-1.704 2.98a.5.5 0 0 0 .869.497l1.703-2.981a.5.5 0 0 1 .868 0l2.54 4.444-1.256-.337a.5.5 0 1 0-.26.966l2.415.647a.5.5 0 0 0 .613-.353l.647-2.415a.5.5 0 1 0-.966-.259l-.333 1.242-2.532-4.431zM2.973 7.73l-1.255.337a.5.5 0 1 1-.26-.966l2.416-.647a.5.5 0 0 1 .612.353l.647 2.415a.5.5 0 0 1-.966.259l-.333-1.242-2.54 4.444a.5.5 0 1 1-.869-.496l1.704-2.981a1.5 1.5 0 0 0-2.604 0l-1.704 2.98a.5.5 0 1 1-.869-.497l1.703-2.98z"/></svg>
+                  <span>Fix with AI</span>
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Apply Code Review Suggested Fix natively
+    async function applyReviewFix(commentId) {
+      const commentList = reviewCommentsFallback[activeFile] || [];
+      const commentIndex = commentList.findIndex(c => c.id === commentId);
+      if (commentIndex === -1) return;
+
+      const comment = commentList[commentIndex];
+      if (comment.code) {
+        const separator = `\n\n// --- AI Applied Fix (Line ${comment.line}) ---\n${comment.code}\n`;
+        codeTextarea.value += separator;
+        files[activeFile] = codeTextarea.value;
+        regenerateLineNumbers();
+        
+        // Save automatically to disk
+        await saveActiveFile();
+        
+        // Remove item from database
+        commentList.splice(commentIndex, 1);
+        reviewCommentsFallback[activeFile] = commentList;
+        
+        performAILineReview();
+        triggerToast("AI Refactoring applied to file", "success");
+        appendTerminalLine(`[AI FIX] Automatically corrected anomaly on Line ${comment.line} of ${activeFile}`, "text-brand-teal");
+      }
+    }
+
+    // Terminal clear function
+    function clearTerminal() {
+      terminalBuffer.innerHTML = '<div class="text-brand-muted">[CONSOLE] Terminal logs flushed.</div>';
+    }
+
+    // Terminal Line addition
+    function appendTerminalLine(text, classText = "text-slate-300") {
+      const div = document.createElement('div');
+      div.className = classText;
+      div.innerText = text;
+      terminalBuffer.appendChild(div);
+      terminalBuffer.scrollTop = terminalBuffer.scrollHeight;
+    }
+
+    // Toast Notification Creator
+    function triggerToast(msg, type = "success") {
+      const wrapper = document.getElementById('toast-wrapper');
+      const toast = document.createElement('div');
+      toast.className = "flex items-center space-x-3 bg-brand-card/95 border border-brand-border px-4 py-3 rounded-xl shadow-2xl transition duration-300 pointer-events-auto transform translate-y-2 opacity-0 animate-fade-in";
+      
+      let badgeColor = 'text-brand-teal';
+      let iconSvg = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+      
+      if (type === "warning") {
+        badgeColor = "text-amber-500";
+        iconSvg = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+      } else if (type === "error") {
+        badgeColor = "text-red-500";
+        iconSvg = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+      }
+
+      toast.innerHTML = `
+        <span class="${badgeColor}">${iconSvg}</span>
+        <span class="text-xs font-semibold text-slate-100">${msg}</span>
+      `;
+      wrapper.appendChild(toast);
+      
+      // Animate Entrance
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 50);
+
+      // Trigger automatic exit
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Fill Prompt Suggestions
+    function fillChatInput(text) {
+      chatInput.value = text;
+      chatInput.focus();
+    }
+
+    // Handles Keyboard input submitting
+    function handleChatSubmit(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submitChatMessage();
+      }
+    }
+\n// Robust backend filesystem synchronization active\n</target>\n<replacement>\n// Robust backend filesystem synchronization active\n</replacement>`);
+          responseHTML = `Refactored matching nodes in <code class="text-slate-300 font-mono text-[11px]">${activeFile}</code> by applying contextual replacements.`;
+          
+          try {
+            const updated = codeTextarea.value.replace("// Check server connection", "// Robust backend filesystem synchronization active");
+            await fetch(`/api/file?path=${activeFile}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: updated })
+            });
+            await loadWorkspaceFiles();
+            appendTerminalLine(`[AI DISPATCH] Applied replace edits cleanly in ${activeFile}`, "text-indigo-400");
+          } catch (e) {}
+        } else {
+          responseHTML = `Understood. Processing request regarding <code class="text-slate-300 font-mono text-[11px]">${activeFile}</code>. You can write scripts, view actual files on disk, or use the "Launch AI Agent" button to spin up the automation loop.`;
+        }
+
+        appendAIMessage(responseHTML, toolCallVisuals);
+        chatScroller.scrollTop = chatScroller.scrollHeight;
+      }, 1500);
+    }
+
+    // Append user input directly to visual thread
+    function appendUserMessage(text) {
+      const div = document.createElement('div');
+      div.className = "flex space-x-2.5 justify-end";
+      div.innerHTML = `
+        <div class="bg-indigo-600/10 border border-brand-accent/20 rounded-xl p-3 max-w-[85%] text-slate-200">
+          <p class="text-xs leading-relaxed font-medium">${text}</p>
+        </div>
+        <div class="w-7 h-7 rounded-lg bg-indigo-600/15 border border-brand-accent/30 flex items-center justify-center font-display font-bold text-xs shrink-0 text-brand-accent select-none">Y</div>
+      `;
+      dynamicChatMessages.appendChild(div);
+    }
+
+    // Append AI Response block with tools execution indicators
+    function appendAIMessage(htmlText, toolHtml = '') {
+      const div = document.createElement('div');
+      div.className = "space-y-2";
+      
+      let avatar = '<div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center font-display font-bold text-xs shrink-0 select-none shadow shadow-indigo-600/30">G</div>';
+      if (tempChatMode) {
+        avatar = '<div class="w-7 h-7 rounded-lg bg-rose-600 flex items-center justify-center font-display font-bold text-xs shrink-0 select-none shadow shadow-rose-600/30">T</div>';
+      }
+
+      div.innerHTML = `
+        ${toolHtml}
+        <div class="flex space-x-2.5">
+          ${avatar}
+          <div class="bg-brand-card border border-brand-border rounded-xl p-3 max-w-[85%] text-slate-300">
+            <p class="text-xs leading-relaxed">${htmlText}</p>
+          </div>
+        </div>
+      `;
+      dynamicChatMessages.appendChild(div);
+    }
+
+    // Tool Execution Visual Box Generator
+    function generateToolCallHtml(name, path, blockContent) {
+      return `
+        <div class="ml-9 border border-brand-border bg-slate-900/40 rounded-xl overflow-hidden mb-2">
+          <!-- Tool Header -->
+          <div class="bg-slate-900 border-b border-brand-border/60 px-3 py-1.5 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              <span class="text-[10px] font-mono text-slate-400">TUI Tool Triggered:</span>
+              <span class="text-xs font-mono font-bold text-brand-teal">${name}</span>
+            </div>
+            <span class="text-[9px] font-mono text-indigo-400 bg-indigo-500/10 px-1 rounded">EXEC_OK</span>
+          </div>
+          <!-- Tool Body details -->
+          <div class="p-2.5 space-y-1">
+            <div class="flex justify-between items-center text-[10px] text-brand-muted font-mono">
+              <span>Target: ${path}</span>
+              <span>Lines: ~${blockContent.split('\n').length}</span>
+            </div>
+            <pre class="bg-brand-terminal border border-brand-border rounded p-2 text-[10px] font-mono overflow-x-auto text-slate-300 max-h-32 leading-relaxed">${blockContent}</pre>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

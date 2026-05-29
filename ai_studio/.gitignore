@@ -1,0 +1,28 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Secure Chrome user profile copies (NEVER commit credentials, cookies, or history)
+chrome_profile_copy/
+
+# Local/Secret env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs and diagnostic dumps
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+aistudio_debug_screenshot.png
+aistudio_chat_screenshot.png
+
+# Temporary scratch and media folders
+scratch/
+temp/
+.temp/
+.DS_Store
+Thumbs.db
